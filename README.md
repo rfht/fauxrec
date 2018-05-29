@@ -1,7 +1,7 @@
 fauxrec
 =======
 
-fauxrec (for **f**fmpeg + **a**ucat **x**11 recorder) is a shell script to
+fauxrec (for **f**fmpeg + **a**ucat **x**11 **rec**order) is a shell script to
 simultaneously record a desktop video stream and one or more audio streams. The
 main goal is to allow screencasting with additional voice-over stream for
 comments, to record instructions, demonstrations, Let's Plays... The license is
