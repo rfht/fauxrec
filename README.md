@@ -1,7 +1,7 @@
 fauxrec
 =======
 
-fauxrec (for *f*fmpeg + *a*ucat *x*11 recorder) is a shell script to
+fauxrec (for **f**fmpeg + **a**ucat **x**11 recorder) is a shell script to
 simultaneously record a desktop video stream and one or more audio streams. The
 main goal is to allow screencasting with additional voice-over stream for
 comments, to record instructions, demonstrations, Let's Plays... The license is
@@ -54,12 +54,14 @@ Refer to [FAQ 13](https://www.openbsd.org/faq/faq13.html#recordmon).
 Usage
 -----
 
-`-r <recording video resolution>`
-`-a <additional audio stream>`
-`-c <video codec>`
-`-p <path>`
-`-v1 <volume adjustment of stream 1>`
-`-v2 <volume adjustment of stream 2>`
+```
+-r <recording video resolution>
+-a <additional audio stream>
+-c <video codec>
+-p <path>
+-v1 <volume adjustment of stream 1>
+-v2 <volume adjustment of stream 2>
+```
 
 Example(s):
 -----------
