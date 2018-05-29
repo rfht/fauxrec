@@ -7,3 +7,93 @@
 # - remove temporary files after muxing?
 # - test how far can push video size
 # - allow substituting aucat with custom other audio recording for portability?
+# - check if ffmpeg and aucat available in path
+# - if -m works, set muxflag=on as default
+# - don't set audiostream (-a flag) to snd/0.mon because not enabled by default?
+# - check with regex that format of -r (resolution) is correct? (shouldn't this
+#   be left to ffmpeg)
+# - test if position can be added to resolution (-r) argument? (like 640x480+48+48)
+# - add mention of $DISPLAY variable for the recording?
+# - AFAIK '-preset ultrafast' is specific to libx264 and needs to be disabled
+#   for use of other codecs
+# - get default framerate from xrandr? same for resolution - default to desktop
+#   resolution?
+# - mention need to stop recording with Ctrl-C??
+###########
+
+USAGE="Usage: `basename $0` [-m] [-r resolution] [-a stream] [-c codec] [-p path] [-f framerate] [-v1 volume_adjustment] [-v2 volume_adjustment] file"
+
+# Parse arguments based on http://www.shelldorado.com/goodcoding/cmdargs.html
+
+filename=
+resolution=
+audiostream=
+videocodec=
+streampath=
+volume1=
+volume2=
+framerate=
+muxflag=off
+
+if [[ $# -eq 0 ]];then
+	echo $USAGE; exit 0
+fi
+
+while [[ $# -gt 0 ]]
+do
+	case "$1" in
+		-m) muxflag=on;;
+		-r) resolution="$2"; break;;
+		-a) audiostream="$2"; break;;
+		-c) videocodec="$2"; break;;
+		-p) streampath="$2"; break;;
+		-v1) volume1="$2"; break;;
+		-v2) volume2="$2"; break;;
+		-f) framerate="$2"; break;;
+		-h) echo $USAGE; exit 0;;
+		-*) echo $USAGE; exit 0;;
+		*) filename="$2"; break;;
+
+	esac
+	shift
+done
+
+# set defaults if not specified in arguments
+if [[ -z "$streampath" ]];then
+	streampath="/tmp"
+fi
+if [[ -z "$resolution" ]];then
+	resolution=640x480
+fi
+if [[ -z "$framerate" ]];then
+	framerate=60
+fi
+# FIXME: find a way that -a not needed
+if [[ -z "$audiostream" ]];then
+	echo "IN DEVELOPMENT: -a argument needed at the moment (e.g. '-a snd/0.mon')"; exit 1
+fi
+if [[ -z "$videocodec" ]];then
+	videocodec=libx264
+fi
+
+# remove temp files in case they exist (from prior attempts)
+rm $streampath/fauxrec_{v0.mp4,a{0,1}.raw}
+
+# record the streams
+# 'sh -i' makes it so that the aucat and ffmpeg jobs receive SIGINT rather than
+# this running script
+sh -i -c "aucat -f snd/0 -o \"$streampath/fauxrec_a0.raw\" | \
+	aucat -f $audiostream -o \"$streampath/fauxrec_a1.raw\" | \
+	ffmpeg -f x11grab -video_size $resolution -framerate $framerate \
+	-i $DISPLAY -c:v $videocodec -preset ultrafast \
+	$streampath/fauxrec_v0.mp4"
+
+echo ""
+echo "RECORDING COMPLETED"
+echo ""
+
+# multiplex the separate streams
+if [[ muxflag = on ]];then
+	echo "IN DEVELOPMENT: mux streams here"
+	# mux, with $volume1 and $volume2 to adjust volumes, and $filename for output
+fi
