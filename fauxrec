@@ -1,0 +1,9 @@
+#!/bin/sh
+
+############
+# TODO:
+############
+# - audio format RAW possible? might be preferrable over WAV
+# - remove temporary files after muxing?
+# - test how far can push video size
+# - allow substituting aucat with custom other audio recording for portability?
