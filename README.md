@@ -29,7 +29,7 @@ Requirements
 ------------
 
 * ffmpeg (install from ports with `doas pkg_add ffmpeg`)
-* OpenBSD's aucat(1)
+* aucat(1) (present on OpenBSD, FreeBSD)
 
 Limitations
 -----------
@@ -37,14 +37,13 @@ Limitations
 * No warning when it runs out of storage while streaming.
 * Higher recording resolutions, non-default video codecs, or simultaneously
   running applications may affect performance while recording to the point of
-  dropping frames and leading to desynchronization.
-* The ffmpeg port's aac encoder fails when attempting to encode aac with
-  constant bitrate. Workarounds are using aac with variable bitrate (thereby
-  not following [YouTube recommended upload encoding
-  settings](https://support.google.com/youtube/answer/1722171?hl=en)), or
-  [building ffmpeg with libfdk_aac
-  encoder](https://github.com/rfht/mystuff/tree/master/graphics/ffmpeg)
-  and using that one.
+  dropping frames and leading to desynchronization. My testing was done on a
+  dual-core i3-7100 with Hyperthreading, recording a 1920x1080 video stream,
+  along with 2 audio streams (monitoring stream and microphone stream) without
+  apparent performance issues.
+* At this time, the muxing step hardcodes a stereo channel layout.
+* The recording with ffmpeg's x11grab doesn't register when an application goes
+  fullscreen, and it continues to record it as being run in a window.
 
 Setting up the Monitoring Stream
 --------------------------------

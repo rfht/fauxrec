@@ -19,9 +19,13 @@
 # - get default framerate from xrandr? same for resolution - default to desktop
 #   resolution?
 # - mention need to stop recording with Ctrl-C??
+# - don't check for filename if -m (muxflag=off)
+# - add flag to skip recording and only mux (to adjust volume ratio, for example)
+# - add highpass=f=200,lowpass=f=3000
+# - HIGH PRIORITY: replace libfdk_aac!
 ###########
 
-USAGE="Usage: `basename $0` [-m] [-r resolution] [-a stream] [-c codec] [-p path] [-f framerate] [-v1 volume_adjustment] [-v2 volume_adjustment] file"
+USAGE="Usage: `basename $0` [-m] [-r resolution] [-a stream] [-c codec] [-p path] [-f framerate] [-v0 volume_adjustment] [-v1 volume_adjustment] file"
 
 # Parse arguments based on http://www.shelldorado.com/goodcoding/cmdargs.html
 
@@ -33,7 +37,7 @@ streampath=
 volume1=
 volume2=
 framerate=
-muxflag=off
+muxflag=on
 
 if [[ $# -eq 0 ]];then
 	echo $USAGE; exit 0
@@ -42,18 +46,17 @@ fi
 while [[ $# -gt 0 ]]
 do
 	case "$1" in
-		-m) muxflag=on;;
-		-r) resolution="$2"; break;;
-		-a) audiostream="$2"; break;;
-		-c) videocodec="$2"; break;;
-		-p) streampath="$2"; break;;
-		-v1) volume1="$2"; break;;
-		-v2) volume2="$2"; break;;
-		-f) framerate="$2"; break;;
+		-m) muxflag=off;;
+		-r) resolution="$2"; shift;;
+		-a) audiostream="$2"; shift;;
+		-c) videocodec="$2"; shift;;
+		-p) streampath="$2"; shift;;
+		-v0) volume0="$2"; shift;;
+		-v1) volume1="$2"; shift;;
+		-f) framerate="$2"; shift;;
 		-h) echo $USAGE; exit 0;;
 		-*) echo $USAGE; exit 0;;
-		*) filename="$2"; break;;
-
+		*) filename="$1"; break;;
 	esac
 	shift
 done
@@ -75,25 +78,47 @@ fi
 if [[ -z "$videocodec" ]];then
 	videocodec=libx264
 fi
+if [[ -z "$filename" ]];then
+	echo $USAGE; exit 0
+fi
+if [[ -z "$volume0" ]];then
+	volume0=1.0
+fi
+if [[ -z "$volume1" ]];then
+	volume1=1.0
+fi
 
 # remove temp files in case they exist (from prior attempts)
-rm $streampath/fauxrec_{v0.mp4,a{0,1}.raw}
+rm $streampath/fauxrec_{v0.mp4,a{0,1}.wav}
 
 # record the streams
 # 'sh -i' makes it so that the aucat and ffmpeg jobs receive SIGINT rather than
 # this running script
-sh -i -c "aucat -f snd/0 -o \"$streampath/fauxrec_a0.raw\" | \
-	aucat -f $audiostream -o \"$streampath/fauxrec_a1.raw\" | \
+sh -i -c "aucat -f snd/0 -o \"$streampath/fauxrec_a0.wav\" | \
+	aucat -f $audiostream -o \"$streampath/fauxrec_a1.wav\" | \
 	ffmpeg -f x11grab -video_size $resolution -framerate $framerate \
 	-i $DISPLAY -c:v $videocodec -preset ultrafast \
 	$streampath/fauxrec_v0.mp4"
 
 echo ""
-echo "RECORDING COMPLETED"
+echo "RECORDING COMPLETE."
 echo ""
 
 # multiplex the separate streams
-if [[ muxflag = on ]];then
-	echo "IN DEVELOPMENT: mux streams here"
-	# mux, with $volume1 and $volume2 to adjust volumes, and $filename for output
+if [[ $muxflag = on ]];then
+	echo "Multiplexing streams to $filename..."
+	echo ""
+	ffmpeg -i "$streampath/fauxrec_v0.mp4" -i "$streampath/fauxrec_a0.wav" \
+		-i "$streampath/fauxrec_a1.wav" -filter_complex \
+		"[1]volume=$volume0,aformat=channel_layouts=stereo[l];[2]volume=$volume1,aformat=channel_layouts=stereo[m];[l][m]amerge=inputs=2[a]" \
+		-map '0:v:0' -map '[a]' -c:v copy -c:a aac -ac 2 \
+		$filename
+	if [[ $? -eq 0 ]];then
+		echo ""
+		echo "MULTIPLEXING COMPLETE."
+	else
+		echo ""
+		echo "MULTIPLEXING FAILED."
+	fi
+	echo ""
 fi
