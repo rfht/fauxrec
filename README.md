@@ -44,6 +44,8 @@ Limitations
 * At this time, the muxing step hardcodes a stereo channel layout.
 * The recording with ffmpeg's x11grab doesn't register when an application goes
   fullscreen, and it continues to record it as being run in a window.
+* Currently requires a second audio stream, e.g. the monitoring stream (see
+  below)
 
 Setting up the Monitoring Stream
 --------------------------------
@@ -65,4 +67,4 @@ Usage
 Example(s):
 -----------
 
-`fauxrec -r 640x480 -a snd/0.mon screencast.mp4`
+`sh fauxrec -r 1920x1080 -a snd/0.mon screencast.mp4`
