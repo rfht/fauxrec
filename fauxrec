@@ -38,6 +38,7 @@ volume1=
 volume2=
 framerate=
 muxflag=on
+hilopass=
 
 if [[ $# -eq 0 ]];then
 	echo $USAGE; exit 0
@@ -54,6 +55,7 @@ do
 		-v0) volume0="$2"; shift;;
 		-v1) volume1="$2"; shift;;
 		-f) framerate="$2"; shift;;
+		-hl) hilopass=",highpass=f=200,lowpass=f=3000";;
 		-h) echo $USAGE; exit 0;;
 		-*) echo $USAGE; exit 0;;
 		*) filename="$1"; break;;
@@ -101,24 +103,25 @@ sh -i -c "aucat -f snd/0 -o \"$streampath/fauxrec_a0.wav\" | \
 	$streampath/fauxrec_v0.mp4"
 
 echo ""
-echo "RECORDING COMPLETE."
+echo "*** Recording complete. ***"
 echo ""
 
 # multiplex the separate streams
 if [[ $muxflag = on ]];then
 	echo "Multiplexing streams to $filename..."
+	echo $hilopass
 	echo ""
 	ffmpeg -i "$streampath/fauxrec_v0.mp4" -i "$streampath/fauxrec_a0.wav" \
 		-i "$streampath/fauxrec_a1.wav" -filter_complex \
-		"[1]volume=$volume0,aformat=channel_layouts=stereo[l];[2]volume=$volume1,aformat=channel_layouts=stereo[m];[l][m]amerge=inputs=2[a]" \
+		"[1]volume=$volume0,aformat=channel_layouts=stereo$hilopass[l];[2]volume=$volume1,aformat=channel_layouts=stereo[m];[l][m]amerge=inputs=2[a]" \
 		-map '0:v:0' -map '[a]' -c:v copy -c:a aac -ac 2 \
 		$filename
 	if [[ $? -eq 0 ]];then
 		echo ""
-		echo "MULTIPLEXING COMPLETE."
+		echo "*** Multiplexing complete. ***"
 	else
 		echo ""
-		echo "MULTIPLEXING FAILED."
+		echo "*** Multiplexing failed. ***"
 	fi
 	echo ""
 fi
