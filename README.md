@@ -25,6 +25,18 @@ in dropped frames when recording 1 video and 2 audio streams (monitoring stream
 and microphone stream), as is needed for recording e.g. gameplay while
 commenting.
 
+Recording both video and audio with *just* ffmpeg on OpenBSD tends to be too
+slow for high resolutions and adequate quality of the recorded streams.
+
+It turns out that the reason for this is apparently lack of (or too little)
+parallelism on th side of ffmpeg.
+
+This script circumvents this by running multiple parallel recording streams
+with both ffmpeg(1) and OpenBSD's aucat(1) and combining them after the
+recording is complete.
+
+Note that this is likely only useful on multiprocess systems/kernels.
+
 Requirements
 ------------
 
@@ -70,4 +82,4 @@ Example(s):
 `sh fauxrec -r 1920x1080 -a snd/0.mon screencast.mp4`
 
 **Note: To stop the recording, press Ctrl-C (not [q]!). Then the script will
-combine (mux) the recorded streams.**
+continue to combine (mux) the recorded streams.**
