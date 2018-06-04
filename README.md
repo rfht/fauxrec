@@ -68,3 +68,6 @@ Example(s):
 -----------
 
 `sh fauxrec -r 1920x1080 -a snd/0.mon screencast.mp4`
+
+**Note: To stop the recording, press Ctrl-C (not [q]!). Then the script will
+combine (mux) the recorded streams.**
