@@ -114,7 +114,7 @@ if [[ $muxflag = on ]];then
 	ffmpeg -i "$streampath/fauxrec_v0.mp4" -i "$streampath/fauxrec_a0.wav" \
 		-i "$streampath/fauxrec_a1.wav" -filter_complex \
 		"[1]volume=$volume0,aformat=channel_layouts=stereo$hilopass[l];[2]volume=$volume1,aformat=channel_layouts=stereo[m];[l][m]amerge=inputs=2[a]" \
-		-map '0:v:0' -map '[a]' -c:v copy -c:a aac -ac 2 \
+		-map '0:v:0' -map '[a]' -c:v copy -c:a aac -q:a 2 -ac 2 \
 		$filename
 	if [[ $? -eq 0 ]];then
 		echo ""
