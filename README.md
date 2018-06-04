@@ -58,6 +58,8 @@ Limitations
   fullscreen, and it continues to record it as being run in a window.
 * Currently requires a second audio stream, e.g. the monitoring stream (see
   below)
+* Likely significantly worse performance on single-core CPUs/single-process
+  systems.
 
 Setting up the Monitoring Stream
 --------------------------------
